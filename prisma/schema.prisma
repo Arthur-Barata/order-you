@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Eatery {
+  id             String        @id @default(uuid())
+  name           String
+  email          String        @unique
+  password       String
+  cnpj           String?
+  logoImage      String?
+  marketingImage String?
+  address        Address?
+  items          Items[]
+  reatedAt       DateTime      @default(now())
+  upDatedAt      DateTime      @updatedAt
+  assessments    Assessments[]
+}
+
+model Items {
+  id           String         @id @default(uuid())
+  name         String
+  image        String?
+  price        Decimal
+  isAvailable  Boolean        @default(true)
+  category     String
+  eateryId     String
+  createdAt    DateTime       @default(now())
+  upDatedAt    DateTime       @updatedAt
+  ordersId     String?
+  eatery       Eatery?        @relation(fields: [eateryId], references: [id])
+  itemsOnOrdes ItemsOnOrdes[]
+}
+
+model WorkInformation {
+  id           String   @id @default(uuid())
+  eateryId     String
+  isOpen       Boolean
+  openingHours String?
+  deliveryTime Int
+  pickUpTime   Int
+  createdAt    DateTime @default(now())
+  upDatedAt    DateTime @updatedAt
+}
+
+model Address {
+  id           String    @id @default(uuid())
+  number       String
+  street       String
+  neighborhood String
+  city         String
+  state        String
+  postalCode   String
+  customerId   String
+  eateryId     String    @unique
+  eatery       Eatery?   @relation(fields: [eateryId], references: [id])
+  customer     Customer? @relation(fields: [customerId], references: [id])
+}
+
+model Assessments {
+  id       String @id @default(uuid())
+  rate     Int
+  comment  String
+  eatery   Eatery @relation(fields: [eateryId], references: [id])
+  eateryId String
+}
+
+model Orders {
+  id             String         @id @default(uuid())
+  custumerName   String
+  custumerNumber String
+  paymentMethod  String
+  status         String
+  obs            String
+  isDelivery     Boolean
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  users          Customer?      @relation(fields: [usersId], references: [id])
+  usersId        String?
+  itemsOnOrdes   ItemsOnOrdes[]
+}
+
+model Customer {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  orders    Orders[]
+  Address   Address[]
+}
+
+model ItemsOnOrdes {
+  itemId    String
+  orderId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Orders   @relation(fields: [orderId], references: [id])
+  item      Items    @relation(fields: [itemId], references: [id])
+
+  @@id([itemId, orderId])
+}

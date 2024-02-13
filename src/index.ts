@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT;
 
 app.get("/", (req, res) => {
+  console.log(req.headers["user-agent"]);
   res.send("<h1>server is running now</h1>");
 });
 
